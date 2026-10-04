@@ -17,7 +17,7 @@ images:
     newTag: v1
   - name: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/product-service
     newName: ghcr.io/lingarajkar/boutique-product-service
-    newTag: v1
+    newTag: v2
   - name: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/order-service
     newName: ghcr.io/lingarajkar/boutique-order-service
     newTag: v1

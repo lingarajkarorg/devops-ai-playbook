@@ -20,6 +20,10 @@ router.get('/', async (req, res) => {
     const limitNum = parseInt(limit as string);
     const offset = (pageNum - 1) * limitNum;
 
+    // Only allow known columns in ORDER BY (prevents SQL injection via ?sortBy=)
+    const allowedSort = ['created_at', 'price', 'name', 'updated_at'];
+    const sortColumn = allowedSort.includes(sortBy as string) ? sortBy : 'created_at';
+
 let whereClause = 'WHERE 1=1';
     const filterParams: any[] = [];
     let paramIndex = 1;
@@ -64,7 +68,7 @@ let whereClause = 'WHERE 1=1';
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       ${whereClause}
-      ORDER BY p.${sortBy}
+      ORDER BY p.${sortColumn}
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
@@ -97,6 +101,28 @@ let whereClause = 'WHERE 1=1';
     console.error('Get products error:', error);
     console.error('Error details:', JSON.stringify(error, null, 2));
     res.status(500).json({ success: false, error: 'Failed to get products', details: error.message });
+  }
+});
+
+router.get('/categories', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT c.*, COUNT(p.id) as product_count 
+      FROM categories c 
+      LEFT JOIN products p ON p.category_id = c.id 
+      GROUP BY c.id, c.name, c.description, c.image_url
+      ORDER BY c.name
+    `);
+
+    const response: ServiceResponse<any[]> = {
+      success: true,
+      data: result.rows
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error('Get categories error:', error);
+    res.status(500).json({ success: false, error: 'Failed to get categories' });
   }
 });
 
@@ -133,28 +159,6 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     console.error('Get product error:', error);
     res.status(500).json({ success: false, error: 'Failed to get product' });
-  }
-});
-
-router.get('/categories', async (req, res) => {
-  try {
-    const result = await query(`
-      SELECT c.*, COUNT(p.id) as product_count 
-      FROM categories c 
-      LEFT JOIN products p ON c.name = p.category 
-      GROUP BY c.id, c.name, c.description, c.image_url
-      ORDER BY c.name
-    `);
-
-    const response: ServiceResponse<any[]> = {
-      success: true,
-      data: result.rows
-    };
-
-    res.json(response);
-  } catch (error) {
-    console.error('Get categories error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get categories' });
   }
 });
 
