@@ -1,0 +1,17 @@
+{
+  "disableClaudeAiConnectors": true,
+  "permissions": {
+    "allow": [
+      "mcp__aiops__*"
+    ],
+    "ask": [
+      "Bash(kubectl *)",
+      "Bash(helm *)",
+      "Bash(docker push *)",
+      "Bash(git push *)"
+    ],
+    "deny": [
+      "Bash(kubectl delete *)"
+    ]
+  }
+}
